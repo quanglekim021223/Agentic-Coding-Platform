@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from .graph_store import GraphStore
 
@@ -15,9 +15,9 @@ def _extract_source(node_info: Dict) -> str:
         return ""
 
 
-def build_prompt_context(repo_root: str, target_func: str, mode: str = "impact") -> Dict:
+def build_opencode_context(repo_root: str, target_func: str, mode: str = "impact") -> Dict:
     """
-    Query the pre-built graph and produce a location-aware context dict.
+    Query the pre-built graph and produce a location-aware context dict for OpenCode.
 
     repo_root must contain a .ast-tool/graph.db built by `cli.py build`.
     mode: 'impact' | 'refactor'
@@ -68,23 +68,7 @@ def build_prompt_context(repo_root: str, target_func: str, mode: str = "impact")
         + [n["file"] for n in blast["alias_risk"]]
     ))
 
-    # Legacy callers dict — keeps Jinja2 templates working unchanged
-    callers = {
-        "high_risk":  sorted(n["name"] for n in blast["high_risk"]),
-        "alias_risk": sorted(n["name"] for n in blast["alias_risk"]),
-        "medium_risk": sorted(n["name"] for n in blast["medium_risk"]),
-        "low_risk": [],
-    }
-
-    # source_codes dict for Jinja2 templates
-    source_codes: Dict[str, str] = {}
-    if mode in ("refactor", "debug"):
-        source_codes[target_func] = target_source
-        for node in all_risk_nodes:
-            source_codes[node["name"]] = node.get("source", "")
-
     return {
-        # New located fields for OpenCode
         "target": {
             "name": target_info["name"],
             "file": target_info["file"],
@@ -95,8 +79,4 @@ def build_prompt_context(repo_root: str, target_func: str, mode: str = "impact")
         "blast_radius": blast_radius,
         "edit_targets": edit_targets,
         "data_contract": contract,
-        # Legacy fields — Jinja2 templates remain unchanged
-        "target_function": target_func,
-        "callers": callers,
-        "source_codes": source_codes,
     }

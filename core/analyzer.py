@@ -15,6 +15,12 @@ def parse_file(filepath: str) -> Tuple[List[Dict], List[Dict]]:
     """
     Parse a single Python file using Tree-Sitter.
 
+    start_byte, end_byte: The byte offsets of the node in the file. (Useful for exact slicing/rewrite: code[start_byte:end_byte] => exact function source.)
+    source_name: the caller function name (where the call happens)
+    Example: in checkout.py, if login() calls checkout(), then checkout() is the source_name and login() is the target_name.
+    target_name: the called function name (what is being called)
+    Same example: target_name = "login"
+
     Returns:
         nodes: list of dicts with keys
                {name, start_line, end_line, start_byte, end_byte}

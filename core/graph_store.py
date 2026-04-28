@@ -13,6 +13,13 @@ def _get_db_path(repo_root: str) -> str:
 
 
 class GraphStore:
+    """
+    Create a SQLite database to store the graph of the repository.
+    Recode and update the graph whenever a file is changed.
+    Resolve edge target_name to the actual node id.
+    Query the graph follow target function name.
+    """
+    
     def __init__(self, repo_root: str):
         self.repo_root = os.path.abspath(repo_root)
         self.db_path = _get_db_path(self.repo_root)

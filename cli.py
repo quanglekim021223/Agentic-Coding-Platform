@@ -3,10 +3,7 @@ import json
 import os
 import sys
 
-import pyperclip
-
-from core.context_builder import build_prompt_context
-from core.compiler import generate_prompt
+from core.context_builder import build_opencode_context
 
 
 # ---------------------------------------------------------------------------
@@ -87,47 +84,20 @@ def cmd_build(args):
 def cmd_analyze(args):
     repo_root = os.path.abspath(args.repo_root)
 
-    print(f"Analyzing '{args.target}' (mode: {args.mode.upper()})...")
+    print(f"Analyzing '{args.target}' for OpenCode (mode: {args.mode.upper()})...")
 
     try:
-        context = build_prompt_context(repo_root, args.target, args.mode)
+        context = build_opencode_context(repo_root, args.target, args.mode)
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    if args.debug:
-        print("\n=== DEBUG CONTEXT ===")
-        print(json.dumps(context, indent=2))
-        print("=====================\n")
-
-    template_map = {"impact": "impact_analysis", "refactor": "safe_refactor"}
-    template_name = template_map[args.mode]
-
-    print("Compiling prompt via Jinja2...")
-    try:
-        final_prompt = generate_prompt(template_name, context)
-    except RuntimeError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    print("\n--- PREVIEW PROMPT ---\n")
-    print(final_prompt[:1000])
-    if len(final_prompt) > 1000:
-        print("\n... (truncated)")
-
-    print("\n--- EDIT TARGETS ---")
-    for f in context.get("edit_targets", []):
-        print(f"  {f}")
-
-    try:
-        pyperclip.copy(final_prompt)
-        print("\n" + "=" * 50)
-        print("Prompt copied to clipboard.")
-        print("Open Claude / ChatGPT / OpenCode and paste.")
-        print("=" * 50 + "\n")
-    except pyperclip.PyperclipException:
-        print("\nCould not copy to clipboard. Full prompt:\n")
-        print(final_prompt)
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as f:
+            json.dump(context, f, indent=2, ensure_ascii=False)
+        print(f"Structured OpenCode context written to: {args.output}")
+    else:
+        print(json.dumps(context, indent=2, ensure_ascii=False))
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +121,7 @@ def main():
 
     # --- analyze ---
     p_analyze = sub.add_parser(
-        "analyze", help="Query the graph and generate a prompt."
+        "analyze", help="Query the graph and output structured OpenCode context JSON."
     )
     p_analyze.add_argument(
         "-t", "--target", required=True, help="Target function name to analyze."
@@ -169,7 +139,8 @@ def main():
         help="Project root containing .ast-tool/graph.db (default: current directory).",
     )
     p_analyze.add_argument(
-        "--debug", action="store_true", help="Print full context JSON."
+        "--output",
+        help="Optional JSON output path. If omitted, prints JSON to stdout.",
     )
 
     args = parser.parse_args()

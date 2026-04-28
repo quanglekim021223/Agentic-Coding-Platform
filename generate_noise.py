@@ -1,53 +1,20 @@
-import random
+import os
 
-# Các hàm gốc của bạn
-func_def = """
-def login(username, password):
-    user = get_user(username)
-    if not user:
-        return False
-    return validate_password(user, password)
+# --- Core auth functions (kept exactly as in demo_app/auth.py) ---
+auth_core = """
+def verify_password(email: str, password: str) -> bool:
+    return email == "admin@example.com" and password == "secret"
 
-def get_user(username):
-    return {"username": username, "password": "hashed_pw"}
 
-def validate_password(user, password):
-    return password == user["password"]
-
-def process_payment(amount):
-    if amount <= 0:
+def login(email: str, password: str):
+    if not verify_password(email, password):
         return False
     return True
 """
 
-usage_1 = """
-def checkout():
-    if login("admin", "123"):
-        process_payment(100)
-"""
-
-usage_2 = """
-# hidden usage 
-def internal_audit():
-    for i in range(1):
-        login("audit", "log")
-"""
-
-usage_3 = """
-# indirect call 
-def wrapper():
-    func = login
-    func("wrapped", "123")
-"""
-
-usage_4 = """
-# dead code 
-def unused_function():
-    login("ghost", "000")
-"""
 
 def generate_enterprise_noise(class_id):
-    """Tạo ra các class rác mang phong cách enterprise rối rắm"""
+    """Generate noisy enterprise-style classes to bury real functions."""
     return f"""
 class EnterpriseManager{class_id}:
     def __init__(self):
@@ -71,31 +38,20 @@ class EnterpriseManager{class_id}:
         return str(self.config) + "-meta"
 """
 
-# Lắp ráp file
-with open("stress_test_billing.py", "w") as f:
-    f.write("# --- CORE DEFINITIONS ---\n")
-    f.write(func_def)
-    
-    # Chèn 200 dòng rác
-    for i in range(1, 15):
-        f.write(generate_enterprise_noise(i))
-        
-    f.write("\n# --- USAGE 1 & 2 ---\n")
-    f.write(usage_1)
-    f.write(usage_2)
-    
-    # Chèn thêm 300 dòng rác nữa
-    for i in range(15, 35):
-        f.write(generate_enterprise_noise(i))
-        
-    f.write("\n# --- USAGE 3 ---\n")
-    f.write(usage_3)
-    
-    # Chèn thêm rác trước khi kết thúc
-    for i in range(35, 50):
-        f.write(generate_enterprise_noise(i))
-        
-    f.write("\n# --- USAGE 4 ---\n")
-    f.write(usage_4)
 
-print("Đã tạo xong file stress_test_billing.py (~800 dòng)!")
+# --- Generate demo_app/auth.py with noise around real functions ---
+os.makedirs("demo_app", exist_ok=True)
+
+with open("demo_app/auth.py", "w") as f:
+    f.write("# --- NOISE BEFORE CORE ---\n")
+    for i in range(1, 8):
+        f.write(generate_enterprise_noise(i))
+
+    f.write("\n# --- CORE AUTH FUNCTIONS ---\n")
+    f.write(auth_core)
+
+    f.write("\n# --- NOISE AFTER CORE ---\n")
+    for i in range(8, 15):
+        f.write(generate_enterprise_noise(i))
+
+print("Generated demo_app/auth.py with noise (~300 lines).")

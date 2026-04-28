@@ -8,6 +8,7 @@ _SKIP_DIRS = {".venv", "venv", "__pycache__", "node_modules", ".git", ".ast-tool
 
 
 def _sha256(filepath: str) -> str:
+    """Calculate the SHA-256 hash of a file."""
     h = hashlib.sha256()
     with open(filepath, "rb") as f:
         h.update(f.read())
