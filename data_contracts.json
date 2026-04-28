@@ -1,0 +1,6 @@
+{
+  "login": {
+    "before": "Returns Boolean (True/False)",
+    "after": "Returns Dict {'status': 'success/fail', 'user_id': int}"
+  }
+}
