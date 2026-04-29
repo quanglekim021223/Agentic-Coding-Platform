@@ -21,3 +21,5 @@ __pycache__/
 *.db-trace-lock-journal-lock-journal
 *.db-trace-lock-journal-lock-journal-lock
 *.db-trace-lock-journal-lock-journal-lock-journal
+.aider.*
+.DS_Store

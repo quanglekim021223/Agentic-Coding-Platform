@@ -1,2 +1,3 @@
 tree-sitter>=0.22.0
 tree-sitter-python>=0.23.0
+aider
