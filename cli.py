@@ -10,7 +10,7 @@ DEFAULT_MODEL = "ollama/qwen2.5-coder:7b"
 
 
 # ---------------------------------------------------------------------------
-# BUILD command
+# BUILD command: Scan repo and build the AST graph.
 # ---------------------------------------------------------------------------
 
 def cmd_build(args):
@@ -81,7 +81,7 @@ def cmd_build(args):
 
 
 # ---------------------------------------------------------------------------
-# ANALYZE command
+# ANALYZE command: Query the graph and output structured OpenCode context JSON.
 # ---------------------------------------------------------------------------
 
 def cmd_analyze(args):
@@ -104,7 +104,7 @@ def cmd_analyze(args):
 
 
 # ---------------------------------------------------------------------------
-# REFACTOR command
+# REFACTOR command: Analyze blast radius and apply AI-driven refactor via Aider + Ollama.
 # ---------------------------------------------------------------------------
 
 def _build_aider_instruction(context: dict) -> str:
@@ -198,7 +198,7 @@ def cmd_refactor(args):
 
 
 # ---------------------------------------------------------------------------
-# Entry point
+# Entry point: Parse CLI arguments and execute the appropriate command.
 # ---------------------------------------------------------------------------
 
 def main():
