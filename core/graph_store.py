@@ -48,7 +48,7 @@ class GraphStore:
                 id                INTEGER PRIMARY KEY,
                 source_node_id    INTEGER NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
                 target_name       TEXT NOT NULL,
-                resolved_node_id  INTEGER REFERENCES nodes(id),
+                resolved_node_id  INTEGER REFERENCES nodes(id) ON DELETE SET NULL,
                 edge_type         TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_nodes_name   ON nodes(name);

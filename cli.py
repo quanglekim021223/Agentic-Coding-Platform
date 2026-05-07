@@ -87,7 +87,10 @@ def cmd_build(args):
 def cmd_analyze(args):
     repo_root = os.path.abspath(args.repo_root)
 
-    print(f"Analyzing '{args.target}' for OpenCode (mode: {args.mode.upper()})...")
+    print(
+        f"Analyzing '{args.target}' for OpenCode (mode: {args.mode.upper()})...",
+        file=sys.stderr,
+    )
 
     try:
         context = build_opencode_context(repo_root, args.target, args.mode)
@@ -98,7 +101,10 @@ def cmd_analyze(args):
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(context, f, indent=2, ensure_ascii=False)
-        print(f"Structured OpenCode context written to: {args.output}")
+        print(
+            f"Structured OpenCode context written to: {args.output}",
+            file=sys.stderr,
+        )
     else:
         print(json.dumps(context, indent=2, ensure_ascii=False))
 
@@ -186,6 +192,17 @@ def cmd_refactor(args):
     print("\n--- DRY RUN: Previewing proposed changes ---")
     _run_aider(model, edit_targets, instruction, dry_run=True, repo_root=repo_root)
 
+    if getattr(args, "non_interactive_apply", False):
+        print("\n--- Applying changes (non-interactive: --apply) ---")
+        _run_aider(model, edit_targets, instruction, dry_run=False, repo_root=repo_root)
+        print("\nDone. Rebuild the graph to reflect changes:")
+        print("  python cli.py build .")
+        return
+
+    if getattr(args, "dry_run_only", False):
+        print("\nDry run only (--dry-run). No files were changed.")
+        return
+
     confirm = input("\nApply these changes? (y/n): ").strip().lower()
     if confirm != "y":
         print("Aborted. No files were changed.")
@@ -268,6 +285,25 @@ def main():
         "--model",
         default=DEFAULT_MODEL,
         help=f"Ollama model to use (default: {DEFAULT_MODEL}).",
+    )
+    refactor_mode = p_refactor.add_mutually_exclusive_group()
+    refactor_mode.add_argument(
+        "--dry-run",
+        action="store_true",
+        dest="dry_run_only",
+        help=(
+            "Non-interactive: run Aider preview only, then exit without applying changes "
+            "(for MCP/agents)."
+        ),
+    )
+    refactor_mode.add_argument(
+        "--apply",
+        action="store_true",
+        dest="non_interactive_apply",
+        help=(
+            "Non-interactive: run preview then apply changes without prompting "
+            "(dangerous — use only from trusted automation/MCP)."
+        ),
     )
 
     args = parser.parse_args()
