@@ -45,6 +45,8 @@ def cmd_build(args):
         file_id = store.upsert_file(filepath, sha256)
 
         node_id_map = {}
+        relpath = os.path.relpath(filepath, repo_root)
+        module_path = os.path.splitext(relpath)[0].replace(os.sep, ".")
         for node in nodes:
             nid = store.upsert_node(
                 file_id,
@@ -53,13 +55,26 @@ def cmd_build(args):
                 node["end_line"],
                 node["start_byte"],
                 node["end_byte"],
+                qualified_name=node.get("qualified_name"),
+                kind=node.get("kind"),
+                container=node.get("container"),
+                module_path=node.get("module_path", module_path),
             )
-            node_id_map[node["name"]] = nid
+            key = node.get("qualified_name") or node["name"]
+            node_id_map[key] = nid
 
         for edge in edges:
-            source_id = node_id_map.get(edge["source_name"])
+            source_key = edge.get("source_qualified_name") or edge["source_name"]
+            source_id = node_id_map.get(source_key)
             if source_id is not None:
-                store.upsert_edge(source_id, edge["target_name"], edge["edge_type"])
+                store.upsert_edge(
+                    source_id,
+                    edge["target_name"],
+                    edge["edge_type"],
+                    target_qualname=edge.get("target_qualname"),
+                    target_module_hint=edge.get("target_module_hint"),
+                    target_container_hint=edge.get("target_container_hint"),
+                )
 
         store.commit()
         parsed += 1
